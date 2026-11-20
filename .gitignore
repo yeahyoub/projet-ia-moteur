@@ -1,0 +1,20 @@
+# Environnement Python et fichiers locaux
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+.streamlit/secrets.toml
+
+# Mesures CWRU obtenues séparément
+/data/
+*.mat
+
+# Fichiers régénérés par les scripts
+/features.csv
+/features_v2.csv
+/confusion_*_v2.png
+
+# Ancien guide local
+/Motor Bearing Fault Diagnosis.docx
