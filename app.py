@@ -15,15 +15,13 @@ from analyse_vibratoire import (
     harmoniser_frequence,
     lire_signal_mat,
 )
+from entrainement import chemins_modeles
 
 
 @st.cache_resource
 def charger_modeles():
     racine = Path(__file__).resolve().parent
-    return {
-        "Random Forest": joblib.load(racine / "random_forest.joblib"),
-        "SVM": joblib.load(racine / "svm.joblib"),
-    }
+    return {nom: joblib.load(chemin) for nom, chemin in chemins_modeles(racine).items()}
 
 
 @st.cache_data(max_entries=8, show_spinner=False)

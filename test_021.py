@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 
 from analyse_vibratoire import calculer_caracteristiques, lire_signal_mat
+from entrainement import chemins_modeles
 
 
 DOSSIER_PROJET = Path(__file__).resolve().parent
@@ -32,10 +33,8 @@ def afficher_diagnostic(nom, predictions, classe_reelle):
 
 
 def main():
-    modeles = {
-        "Random Forest": joblib.load(DOSSIER_PROJET / "random_forest_v2.joblib"),
-        "SVM": joblib.load(DOSSIER_PROJET / "svm_v2.joblib"),
-    }
+    chemins = chemins_modeles(DOSSIER_PROJET, version=2)
+    modeles = {nom: joblib.load(chemin) for nom, chemin in chemins.items()}
     for fichier, classe_reelle in CLASSES_REELLES.items():
         print(f"\n===== {fichier} =====")
         print("Défaut réel :", classe_reelle)

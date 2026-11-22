@@ -14,9 +14,11 @@ from analyse_vibratoire import (
     FS_CIBLE,
     TAILLE_FENETRE,
     calculer_caracteristiques,
+    calculer_spectre,
     harmoniser_frequence,
     lire_signal_mat,
 )
+from entrainement import chemins_modeles
 
 
 CLASSES = ["Sain", "Bague intérieure", "Bille", "Bague extérieure"]
@@ -25,10 +27,7 @@ CLASSES = ["Sain", "Bague intérieure", "Bille", "Bague extérieure"]
 @st.cache_resource
 def charger_modeles():
     racine = Path(__file__).resolve().parent
-    chemins = {
-        "Random Forest": racine / "random_forest_v2.joblib",
-        "SVM": racine / "svm_v2.joblib",
-    }
+    chemins = chemins_modeles(racine, version=2)
     manquants = [chemin.name for chemin in chemins.values() if not chemin.is_file()]
     if manquants:
         raise FileNotFoundError("Fichiers de modèles manquants : " + ", ".join(manquants))
@@ -59,10 +58,7 @@ def figure_signal_et_spectre(signal):
     segment = signal[:4096]
     taille = len(segment)
     temps = np.arange(taille) / FS_CIBLE
-    amplitude = np.abs(
-        np.fft.rfft((segment - np.mean(segment)) * np.hanning(taille))
-    )
-    frequences = np.fft.rfftfreq(taille, d=1 / FS_CIBLE)
+    frequences, amplitude = calculer_spectre(segment)
 
     figure, (axe_signal, axe_spectre) = plt.subplots(
         2, 1, figsize=(10, 6), constrained_layout=True
@@ -104,9 +100,8 @@ def afficher_diagnostics(diagnostics):
             st.metric("Part des fenêtres dans cette classe", f"{pourcentage:.1f} %")
             st.bar_chart(repartition)
 
-    diagnostic_rf = diagnostics["Random Forest"][0]
-    diagnostic_svm = diagnostics["SVM"][0]
-    if diagnostic_rf == diagnostic_svm:
+    classes_predites = {diagnostic[0] for diagnostic in diagnostics.values()}
+    if len(classes_predites) == 1:
         st.success("Les deux modèles indiquent la même classe.")
     else:
         st.warning(
@@ -138,7 +133,7 @@ def afficher_analyse(fichier, frequence):
 
     afficher_diagnostics(diagnostics)
     with st.expander("Voir les huit caractéristiques extraites"):
-        st.dataframe(caracteristiques.head(10), use_container_width=True)
+        st.dataframe(caracteristiques.head(10), width="stretch")
 
 
 def main():

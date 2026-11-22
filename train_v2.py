@@ -11,11 +11,10 @@ from sklearn.metrics import (
 )
 
 from analyse_vibratoire import CARACTERISTIQUES_V2
-from entrainement import creer_modeles
+from entrainement import CHARGE_TEST_HP, chemins_modeles, creer_modeles
 
 
 DOSSIER_PROJET = Path(__file__).resolve().parent
-CHARGE_TEST_HP = 3
 
 
 def bilan_par_fichier(donnees_test, predictions):
@@ -54,6 +53,7 @@ def main():
     print("Fichiers entraînement :", len(fichiers_entrainement))
     print("Fichiers test :", len(fichiers_test))
 
+    chemins = chemins_modeles(DOSSIER_PROJET, version=2)
     for nom, modele in creer_modeles().items():
         print(f"\n=========================\n{nom}\n=========================")
         modele.fit(caracteristiques_entrainement, classes_entrainement)
@@ -70,15 +70,15 @@ def main():
         print(bilan.to_string(index=False))
         print("Accuracy par fichier :", f"{bilan['Correct'].mean():.2%}")
 
-        nom_fichier = nom.lower().replace(" ", "_")
+        chemin_modele = chemins[nom]
         affichage = ConfusionMatrixDisplay.from_predictions(
             classes_test, predictions, xticks_rotation=45, cmap="Blues"
         )
         figure = affichage.figure_
         figure.tight_layout()
-        figure.savefig(DOSSIER_PROJET / f"confusion_{nom_fichier}_v2.png", dpi=160)
+        figure.savefig(DOSSIER_PROJET / f"confusion_{chemin_modele.stem}.png", dpi=160)
         plt.close(figure)
-        joblib.dump(modele, DOSSIER_PROJET / f"{nom_fichier}_v2.joblib")
+        joblib.dump(modele, chemin_modele)
 
     print("\nEntraînement V2 terminé !")
 

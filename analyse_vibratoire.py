@@ -58,6 +58,14 @@ def harmoniser_frequence(signal, frequence_origine):
     return signal
 
 
+def calculer_spectre(signal):
+    """Renvoie les fréquences et amplitudes d'un extrait à 12 kHz."""
+    signal_centre = signal - signal.mean()
+    frequences = np.fft.rfftfreq(signal.size, d=1 / FS_CIBLE)
+    amplitudes = np.abs(np.fft.rfft(signal_centre * np.hanning(signal.size)))
+    return frequences, amplitudes
+
+
 def calculer_caracteristiques(signal, *, version=2):
     """Extrait les caractéristiques de chaque fenêtre complète à 12 kHz."""
     if version not in (1, 2):

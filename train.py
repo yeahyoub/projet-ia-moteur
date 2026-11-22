@@ -6,21 +6,22 @@ import pandas as pd
 from sklearn.metrics import ConfusionMatrixDisplay, accuracy_score, classification_report
 
 from analyse_vibratoire import CARACTERISTIQUES_V1
-from entrainement import creer_modeles
+from entrainement import CHARGE_TEST_HP, chemins_modeles, creer_modeles
 
 
 DOSSIER_PROJET = Path(__file__).resolve().parent
-CHARGE_TEST_HP = 3
 
 
 def main():
     donnees = pd.read_csv(DOSSIER_PROJET / "features.csv")
     masque_test = donnees["Charge_HP"] == CHARGE_TEST_HP
+    donnees_entrainement = donnees.loc[~masque_test]
+    donnees_test = donnees.loc[masque_test]
     caracteristiques = list(CARACTERISTIQUES_V1)
-    caracteristiques_entrainement = donnees.loc[~masque_test, caracteristiques]
-    caracteristiques_test = donnees.loc[masque_test, caracteristiques]
-    classes_entrainement = donnees.loc[~masque_test, "Classe"]
-    classes_test = donnees.loc[masque_test, "Classe"]
+    caracteristiques_entrainement = donnees_entrainement[caracteristiques]
+    caracteristiques_test = donnees_test[caracteristiques]
+    classes_entrainement = donnees_entrainement["Classe"]
+    classes_test = donnees_test["Classe"]
 
     print("Échantillons entraînement :", len(caracteristiques_entrainement))
     print("Échantillons test :", len(caracteristiques_test))
@@ -42,8 +43,8 @@ def main():
         affichage.figure_.tight_layout()
         plt.show()
 
-    joblib.dump(modeles["Random Forest"], DOSSIER_PROJET / "random_forest.joblib")
-    joblib.dump(modeles["SVM"], DOSSIER_PROJET / "svm.joblib")
+    for nom, chemin in chemins_modeles(DOSSIER_PROJET).items():
+        joblib.dump(modeles[nom], chemin)
     print("Modèles enregistrés !")
 
 
